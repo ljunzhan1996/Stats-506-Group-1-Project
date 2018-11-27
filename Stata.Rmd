@@ -10,7 +10,33 @@ knitr::opts_chunk$set(echo = TRUE)
 # 80: --------------------------------------------------------------------------
 ```
 
+<html>
+<body>
+<style>
+  ul {list-style-type: none; 
+    padding: 0; 
+    margin: 0; 
+    height: 100%; 
+    position: fixed;
+    left:17px;
+    top:17%;}
+</style>
 
+<ul> 
+  <font size="4.7">
+  <li><a href="ridge_regression.html">
+  <p style="color:#000000;background-color:#FFD700">**Introduction**</p></a></li> 
+  <li><a href="Matlab.html">
+  <p style="color:#000000;background-color:#6495ED">**Matlab**</p></a></li>
+  <li><a href="Stata.html">
+  <p style="color:#000000;background-color:#FFD700">**Stata**</p></a></li> 
+  <li><a href="Project_R.html">
+  <p style="color:#000000;background-color:#6495ED">**R**</p></a></li>
+  </font>
+</ul>
+
+</body>
+</html>
 
 ##Data Summary
 ###Load Data
@@ -154,11 +180,4 @@ abnormal value. If we exclude this observation, the MSE is much better.
 
 If we use this result to predict, RMSE(Root Mean Sqaured Error), which is the 
 root of MSE, is to be used. RMSE equals 2.377 and it is relatively good.
-
-##Consideration
-
-##References
-**ridgereg package**-http://www.haghish.com/statistics/stata-blog/stata-programming/download/ridgereg.html
-
-Faraway,Julian James. *Linear Models with R*. CRC Press LLC, 2009.
 

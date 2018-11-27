@@ -41,7 +41,14 @@ library(fields)
 </html>
 
 ##Introduction
+Among ordinary OLS regression, it is easy to cause problems, for example, imprecise estimate of coefficients, measurement error sensitivity and numerical instability when predictors are highly correlated. To deal with mutiple collinearity of predictors, we could choose to use ridge regression rather.
 
+In the following, we will explain the mechanism of ridge regression from the perspective of singular value decomposition.
+
+Fist, we do Singular Value Decompostion of $X$.
+$$X=UDV^T$$
+
+where $U,V$ are orthogonal matrices
 
 ##Data Description
 The dataset we used in this project was meatspec, from R package: faraway. 
@@ -83,4 +90,15 @@ mtext(text = "Channel", side = 1, line = 1, at = 1.1)
 ##Consideration
 
 ##References
+Package Ridge
+https://cran.r-project.org/web/packages/ridge/ridge.pdf
 
+A SEMI-AUTOMATIC METHOD TO GUIDE THE CHOICE OF RIDGE PARAMETER IN RIDGE REGRESSION
+https://arxiv.org/pdf/1205.0686.pdf
+
+Source code
+https://github.com/SteffenMoritz/ridge/tree/master/R
+
+**ridgereg package** http://www.haghish.com/statistics/stata-blog/stata-programming/download/ridgereg.html
+
+Faraway,Julian James. *Linear Models with R*. CRC Press LLC, 2009.
