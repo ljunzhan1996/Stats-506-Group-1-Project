@@ -1,0 +1,9 @@
+Consideration/Reflection:
+Why there are differences between three methods?
+Matlab: control the randomness of cross-validation
+R: find the optimal Npcs
+Stata: coefficients plot
+
+Introduction:
+To be updated later
+
