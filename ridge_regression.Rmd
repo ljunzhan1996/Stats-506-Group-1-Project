@@ -1,0 +1,104 @@
+---
+title: "Stats506 F18, Group Project"
+author: "*Group 1: Junzhang Li, Ruirui Zhang, Xun Wang*"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# 80: --------------------------------------------------------------------------
+knitr::opts_chunk$set(echo = TRUE)
+library(faraway)
+library(fields)
+```
+
+#**Tutorial to Ridge Regression**
+<html>
+<body>
+<style>
+  ul {list-style-type: none; 
+    padding: 0; 
+    margin: 0; 
+    height: 100%; 
+    position: fixed;
+    left:17px;
+    top:17%;}
+</style>
+
+<ul> 
+  <font size="4.7">
+  <li><a href="ridge_regression.html">
+  <p style="color:#000000;background-color:#FFD700">**Introduction**</p></a></li> 
+  <li><a href="Matlab.html">
+  <p style="color:#000000;background-color:#6495ED">**Matlab**</p></a></li>
+  <li><a href="Stata.html">
+  <p style="color:#000000;background-color:#FFD700">**Stata**</p></a></li> 
+  <li><a href="Project_R.html">
+  <p style="color:#000000;background-color:#6495ED">**R**</p></a></li>
+  </font>
+</ul>
+
+</body>
+</html>
+
+##Introduction
+Among ordinary OLS regression, it is easy to cause problems, for example, imprecise estimate of coefficients, measurement error sensitivity and numerical instability when predictors are highly correlated. To deal with mutiple collinearity of predictors, we could choose to use ridge regression rather.
+
+In the following, we will explain the mechanism of ridge regression from the perspective of singular value decomposition.
+
+Fist, we do Singular Value Decompostion of $X$.
+$$X=UDV^T$$
+
+where $U,V$ are orthogonal matrices
+
+##Data Description
+The dataset we used in this project was meatspec, from R package: faraway. 
+
+The dataset includes 215 samples. For each sample, the fat content of fresh choped meat
+was measured along the 100 channel spectrum of absorbances. 
+Since determining the fat content via analytical chemistry is time consuming we would 
+like to build a model to predict the fat content of new samples using 100 obsorbances 
+which can be measured more easily.
+
+```
+library(faraway)
+```
+
+```{R dim, include = T,echo=FALSE}
+data("meatspec")
+dim(meatspec)
+```
+
+The 215 samples of 100 channel spectrum of absorbances measurement forms a 215 * 100 matrix, where the condition number is 2.6e+14. High condition number shows the matrix is ill-conditioned.
+
+```{R conditional number,echo=FALSE}
+X = as.matrix(meatspec[, -101])
+e = eigen(t(X) %*% X)$val
+max(e)/min(e) # 2.6e+14
+```
+
+
+Below is a plot of correlation among 100 channel spectrum of absorbances. We observe very high collinearity, where adjacent channels are almost perfectly correlated. 
+
+```{R correlation,echo=FALSE}
+par(mar = c(3,3,2,1))
+fields::image.plot(cor(X), col = heat.colors(64), las = 1, axes = FALSE)
+axis(side = 1, at = seq(0, 100, 10)/100, labels = seq(0, 100, 10))
+axis(side = 2, at = seq(0, 100, 10)/100, labels = seq(0, 100, 10), las = 2)
+mtext(text = "Channel", side = 1, line = 1, at = 1.1)
+```
+
+##Consideration
+
+##References
+Package Ridge
+https://cran.r-project.org/web/packages/ridge/ridge.pdf
+
+A SEMI-AUTOMATIC METHOD TO GUIDE THE CHOICE OF RIDGE PARAMETER IN RIDGE REGRESSION
+https://arxiv.org/pdf/1205.0686.pdf
+
+Source code
+https://github.com/SteffenMoritz/ridge/tree/master/R
+
+**ridgereg package** http://www.haghish.com/statistics/stata-blog/stata-programming/download/ridgereg.html
+
+Faraway,Julian James. *Linear Models with R*. CRC Press LLC, 2009.
