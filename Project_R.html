@@ -11,7 +11,7 @@
 
 <meta name="author" content="Ruirui Zhang, ruiruiz@umich.edu" />
 
-<meta name="date" content="2018-11-23" />
+<meta name="date" content="2018-11-27" />
 
 <title>Stats 506, F18, Group Project</title>
 
@@ -126,11 +126,59 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Stats 506, F18, Group Project</h1>
 <h4 class="author"><em>Ruirui Zhang, <a href="mailto:ruiruiz@umich.edu">ruiruiz@umich.edu</a></em></h4>
-<h4 class="date"><em>November 23, 2018</em></h4>
+<h4 class="date"><em>November 27, 2018</em></h4>
 
 </div>
 
 
+<div id="tutorial-to-ridge-regression" class="section level1">
+<h1><strong>Tutorial to Ridge Regression</strong></h1>
+<html>
+<body>
+<style>
+  ul {list-style-type: none; 
+    padding: 0; 
+    margin: 0; 
+    height: 100%; 
+    position: fixed;
+    left:17px;
+    top:17%;}
+</style>
+<ul>
+<font size="4.7">
+<li>
+<a href="ridge_regression.html">
+<p style="color:#000000;background-color:#FFD700">
+<strong>Introduction</strong>
+</p>
+</a>
+</li>
+<li>
+<a href="Matlab.html">
+<p style="color:#000000;background-color:#6495ED">
+<strong>Matlab</strong>
+</p>
+</a>
+</li>
+<li>
+<a href="Stata.html">
+<p style="color:#000000;background-color:#FFD700">
+<strong>Stata</strong>
+</p>
+</a>
+</li>
+<li>
+<a href="Project_R.html">
+<p style="color:#000000;background-color:#6495ED">
+<strong>R</strong>
+</p>
+</a>
+</li>
+</font>
+</ul>
+</body>
+</html>
+</div>
 <div id="package-ridge-there-is-a-bug" class="section level1">
 <h1>Package RIDGE: There is a BUG!</h1>
 <p>Package RIDGE was published on July 26, 2018.</p>
@@ -263,7 +311,7 @@ rmse_fct(y = test_data[, 101],
 <h3>Conclusion</h3>
 <p>We identified a defect in implementating “linearRidge” function in package “RIDGE” under extreme scenarios, where predictors are almost perfectly multicollinearity. Under such situations, we suggest user to to specify the value of paramter “nPCs” as an input to the function.</p>
 <p>Zooming into the source code, we observed the threshold used for selecting number of principal components was fixed at 90%. Is it the best practice? Based on our data, the answer is no. Moreover, higher number of principal components does not guarantee better prediction.</p>
-<p>Here we come to a topic may worth further investigation: where is the optimal point for threshold? How to find it efficiently?</p>
+<p>Here we come to problems may worth further investigation: where is the optimal point for threshold? How to find it efficiently?</p>
 </div>
 </div>
 </div>
