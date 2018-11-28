@@ -69,8 +69,7 @@ While exploring the RIDGE package, we have found an implementation defect in fun
 
 In this section, we will identify the problem and propose a solution to get rid of it. 
 
-
-## Prepare Data: 
+## Load, Mung and Visualize Data: 
 The dataset we use was "meatspec", from faraway package. 
 ```
 library("faraway")
@@ -86,6 +85,7 @@ if (!require("faraway")) {
 data(meatspec)
 ```
 
+Below is a matplot of absorbances(y) agains 100 channel spectrums ($X_1$, $X_2$, ..., $X_{100}$) for first 10 observations in the dataset. 
 ```{R First 10}
 # plot first 10 observations
 matplot(t(meatspec[c(1:10), c(1:100)]), 
@@ -102,7 +102,7 @@ new_data = meatspec %>% dplyr::mutate(gp = seq(1:n())%% 5)
 ```{R new_data, include = F}
 new_data = meatspec %>% dplyr::mutate(gp = seq(1:n())%% 5)
 ```
-## Linear ridge regression using package: RIDGE
+## Ridge regression using package: RIDGE
 ### Function: linearRidge
 The R package "Ridge" contains a function "linearRidge", which fits a linear ridge regression model providing an option to chose the ridge regression parameter automatically using the method proposed by Cule et at(2012).
 ```
@@ -295,7 +295,7 @@ ridge.predict80 = predict(object = ridge.fit80, newdata = test_data[, 1:100])
 rmse_fct(y = test_data[, 101],
          yhat = ridge.predict80)
 ```
-### Conclusion 
+## Conclusion 
 We identified a defect in implementating "linearRidge" function in package "RIDGE" under extreme scenarios, where predictors are almost perfectly multicollinearity. Under such situations, we suggest user to to specify the value of paramter "nPCs" as an input to the function. 
 
 Zooming into the source code, we observed the threshold used for selecting number of principal components was fixed at 90%. Is it the best practice? Based on our data, the answer is no. Moreover, higher number of principal components does not guarantee better prediction. 
