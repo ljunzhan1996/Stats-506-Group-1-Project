@@ -92,12 +92,13 @@ matplot(t(meatspec[c(1:10), c(1:100)]),
         xlab = "channel",
         ylab = "absorbances")
 ```
-```{R First 10, fig.width=5,fig.height=4}
+```{R First 10, fig.width=6,fig.height=4}
 # plot first 10 observations
 matplot(t(meatspec[c(1:10), c(1:100)]), 
         pch = "*", las = 1,
         xlab = "channel",
-        ylab = "absorbances")
+        ylab = "absorbances",
+        main = "Plot of first 10 observations")
 ```
 
 To split dataset into 5 groups, a new column "gp" was added with values 0, 1, 2, 3, 4. We take gp = 1 - 4 as training data, and gp = 0 as validation data. 
