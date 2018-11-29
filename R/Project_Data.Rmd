@@ -1,0 +1,68 @@
+---
+title: "Stats 506, F18, Group Project"
+author: "Ruirui Zhang, ruiruiz@umich.edu"
+# date: "`r format.Date(Sys.Date(), '%B %d, %Y')`"
+output:
+  html_document:
+  df_print: paged
+pdf_document: default
+---
+  
+```{r setup, include=FALSE}
+# 80: --------------------------------------------------------------------------
+#! We generally don't need to see the code in the results document.
+knitr::opts_chunk$set(echo = FALSE)
+
+#! Make sure all chunks have a label. This one is labelled 'setup'.
+setwd("C:/Users/zhang/Desktop/UMich F18/STATS 506/Project/")
+
+
+# load packages
+library(faraway)
+
+```
+
+
+# Summarize Data
+The dataset we used in this project was [meatspec](https://cran.r-project.org/web/packages/faraway/faraway.pdf), from R package: faraway. 
+
+The dataset includes 215 samples. For each sample, the fat content of fresh choped meat
+was measured along the 100 channel spectrum of absorbances. 
+Since determining the fat content via analytical chemistry is time consuming we would 
+like to build a model to predict the fat content of new samples using 100 obsorbances 
+which can be measured more easily.
+
+```
+library(faraway)
+```
+
+```{R dim, include = T}
+data("meatspec")
+dim(meatspec)
+```
+
+The 215 samples of 100 channel spectrum of absorbances measurement forms a 215 * 100 matrix, where the condition number is 2.6e+14. High condition number shows the matrix is ill-conditioned.
+```
+X = as.matrix(meatspec[, -101])
+e = eigen(t(X) %*% X)$val
+max(e)/min(e) # 2.6e+14
+```
+```{R conditional number}
+X = as.matrix(meatspec[, -101])
+e = eigen(t(X) %*% X)$val
+max(e)/min(e) # 2.6e+14
+```
+
+
+Below is a plot of correlation among 100 channel spectrum of absorbances. We observe very high collinearity, where adjacent channels are almost perfectly correlated. 
+
+```{R correlation, fig.width=5,fig.height=4}
+par(mar = c(3,3,2,1))
+fields::image.plot(cor(X), col = heat.colors(64), las = 1, axes = FALSE)
+axis(side = 1, at = seq(0, 100, 10)/100, labels = seq(0, 100, 10))
+axis(side = 2, at = seq(0, 100, 10)/100, labels = seq(0, 100, 10), las = 2)
+mtext(text = "Channel", side = 1, line = 1, at = 1.1)
+```
+
+
+
