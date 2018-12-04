@@ -2,7 +2,8 @@
 title: "Stats506 F18, Group Project, Stata"
 author: "Xun Wang, xunwang@umich.edu"
 date: "Novmber 22,2018"
-output: html_document
+output:
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -10,57 +11,31 @@ knitr::opts_chunk$set(echo = TRUE)
 # 80: --------------------------------------------------------------------------
 ```
 
-<html>
-<body>
-<style>
-  ul {list-style-type: none; 
-    padding: 0; 
-    margin: 0; 
-    height: 100%; 
-    position: fixed;
-    left:17px;
-    top:17%;}
-</style>
-
-<ul> 
-  <font size="4.7">
-  <li><a href="ridge_regression.html">
-  <p style="color:#000000;background-color:#FFD700">**Introduction**</p></a></li> 
-  <li><a href="Matlab.html">
-  <p style="color:#000000;background-color:#6495ED">**Matlab**</p></a></li>
-  <li><a href="Stata.html">
-  <p style="color:#000000;background-color:#FFD700">**Stata**</p></a></li> 
-  <li><a href="Project_R.html">
-  <p style="color:#000000;background-color:#6495ED">**R**</p></a></li>
-  </font>
-</ul>
-
-</body>
-</html>
-
-##Data Summary
-###Load Data
+##Load, Mung and Summarize Data
 First, we load data into Stata and we could see the dimension of this dataset
 when we import it.
 ```{r eval=FALSE}
+*Load Data
 import delimited meatspec.csv,clear
 ```
 ![](import.PNG){width=37%}
 
-###Summarize
 Then we use summarize command to see the brief description of this dataset.
 Because our dataset has 100 independent variables and 1 dependent variable.
 We only show the first six of them.
 ```{r eval=FALSE}
+*Summarize Data
 summarize v1 v2 v3 v4 v5 fat
 ```
 ![](summary.PNG){width=72%}
 
+The data seems to be very clean, we just pass to next step.
 
-##Model Assessment
-###Install package
+
+##Ridge Regression using Package: ridgereg
+###Function Description
 Because package:ridgereg is not included in Stata, we need to install it first.
-We will use several options of this command: 
+We will use several options of this function ridgereg: 
 model(orr): ordinary ridge regression.
 
 kr(): ridge $\lambda$ value, it is must be in the range (0 < k < 1).
@@ -74,6 +49,7 @@ the regression result for this case.
 
 See references for more information about this package.
 ```{r eval=FALSE}
+*install ridgereg package
 ssc install ridgereg
 ```
 
@@ -82,6 +58,7 @@ As recommanded by the method of ridge regression, we need to standarized our
 predictors and centered the response first. Using for loop to achieve this 
 object:
 ```{r eval=FALSE}
+*standardize independent variables and centered dependent variable
 summarize fat
 local mean_fat=r(mean)
 replace fat=fat-r(mean) 
@@ -91,7 +68,39 @@ foreach i of numlist 1/100 {
 }
 ```
 
-###Cross-Validation
+###$\beta$ridge
+As we know from introsuction, the coefficients of ridge regression shrink 
+to 0 with the increasing of $\lambda$ value. If we visualize this process in Stata,
+we first do ridge regression on each $\lambda$ and then plot coefficients against
+$\lambda$ value. We could get a plot as below:
+```{r eval=FALSE}
+*graph of coefficients: converge to 0
+preserve
+ridgereg fat v* if mod(n,5)!=0,model(orr) kr(0) coll diag
+matrix coeff=e(b)
+local index=1
+generate lambda=0
+foreach i of numlist 1e-9(1e-9)5e-8{
+    local index=`index'+1
+    ridgereg fat v* if mod(n,5)!=0,model(orr) kr(`i') coll diag
+	replace lambda=`i' in `index'
+	matrix b=e(b)
+	matrix coeff=(coeff\b)
+}
+svmat coeff,names(coeff)
+line coeff1-coeff99 lambda
+restore
+```
+
+<center>
+**Figure 1.** Coefficients converge to 0 with the increasing of $lambda$
+
+![](coeff_axies.PNG){width=72%}
+</center>
+
+As we could see, all coefficients converge to 0 finally.
+
+###Selection of $\lambda$
 Often there is insufficient data for us to do model assessment. Cross-Validation 
 comes to be a commom solutions for this problem based on predictions. In this 
 way, we set some data aside for test and use the other part do training-validation
@@ -103,6 +112,7 @@ on prediction.
 ####Group
 First, we generate a column of case numbers for this dataset.
 ```{r eval=FALSE}
+*cross-validation assign group
 generate n=_n
 ```
 
@@ -110,7 +120,7 @@ In this case, we split our dataset into 5 groups. One of the group is test data,
 whose case number could be divided by 5 and without reminder. Others are 
 training and validation data.
 
-####Training & Validation
+####Cross-Validation
 In this step, we could simply do training and validation process together based 
 on a model selection diagnostic criteria returned by Stata itself. So, we could 
 save much time. This criteria is generalized cross-validation(GCV) value and it 
@@ -120,6 +130,7 @@ $\lambda$ which optimizes this value.
 The porcess is below. Doing this loop 100 times for different $\lambda$ values 
 and generating a list to save GCV value and corresponding $\lambda$.
 ```{r eval=FALSE}
+*return GCV(Generalized Cross-Validation) value
 generate gcv=10
 generate lambda=0
 local index=0
@@ -133,10 +144,16 @@ foreach i of numlist 0(1e-11)1e-9{
 
 Then we could plot GCV values against $\lambda$. Soomthing this line.
 ```{r eval=FALSE}
+*graph of GCV values on lamda
 lowess gcv lambda if n<=101
 ```
-![](plot.PNG){width=47%}
 
+
+<center>
+**Figure 2.** GCV values against different $lambda$
+
+![](plot.PNG){width=57%}
+</center>
 
 From the plot above, we could see that GCV estimates reaches its minimum around
 5e-10. It is the same with the result computed below.
@@ -145,6 +162,7 @@ summarize gcv if n<=101
 summarize lambda if gcv==r(min)
 ```
 ![](gcv.PNG){width=67%}
+
 ![](lambda.PNG){width=67%}
 
 So, we could conclude that $\lambda=5e-10$ for this case.
@@ -157,6 +175,7 @@ use matrix manipulation to get predictions.
 Don't forget that fat variable is centered at first. We need to add back mean 
 value at last to get preditions of fat on all groups of observations.
 ```{r eval=FALSE}
+*test performances of model, lamda=5e-10
 ridgereg fat v* if mod(n,5)!=0,model(orr) kr(5e-10) coll predict(pred)
 matrix coeff=e(b)'
 generate constant=1
@@ -167,6 +186,7 @@ svmat pred_fat,names(pred_fat)
 
 Finally, MSE of predictions could be computed .Review the formula in introduction to see how it works. Here is the way we could computed in Stata.
 ```{r eval=FALSE}
+*compute MSE
 generate err_fat=(pred_fat-fat)^2
 summarize err_fat if mod(n,5)==0
 display r(mean)
@@ -176,8 +196,21 @@ display r(mean)
 We could see that the MSE of one point even reaches 727. Actually it is an 
 abnormal value. If we exclude this observation, the MSE is much better.
 
+```{r eval=FALSE}
+*exclude 727 abnormal observation
+summarize err_fat if mod(n,5)==0&n!=185
+display r(mean)
+```
 ![](exclude.PNG){width=67%}
 
 If we use this result to predict, RMSE(Root Mean Sqaured Error), which is the 
 root of MSE, is to be used. RMSE equals 2.377 and it is relatively good.
+
+##Conclusion
+As we could see from above, GCV values against $\lambda$ is not continuous. This
+may bacause predictors are highly correlated and some predictors could not provide extra information for explaining response, so their coefficients are forced to 0.
+And their coefficients, which equal 0, are not totally the same with the increasing
+of $\lambda$. In this case, GCV values will have a relative large change compared
+to last ones. As a result, the graph of GCV values is not strictly continuous.
+In addition, $\lambda$ is very small after standardization. 
 
