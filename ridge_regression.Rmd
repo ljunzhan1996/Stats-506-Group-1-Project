@@ -107,7 +107,7 @@ an equally important part in ridge regression.
 
 
 #Data Description
-The dataset we will use in this project is meatspec, from R package: faraway. You could
+The dataset we will use in this project is [meatspec](https://cran.r-project.org/web/packages/faraway/faraway.pdf), from R package: faraway. You could
 see more descriptions of this package in references.
 
 The dataset meatspec includes 215 samples. For each sample, the fat content(fat) of fresh
@@ -144,6 +144,7 @@ max(e)/min(e)
 Below is a plot of correlation among 100 channel spectrum of absorbances. We observe 
 a very high collinearity, where adjacent channels are almost perfectly correlated. 
 
+<center>
 ```{R correlation}
 ##correlation plot
 par(mar = c(3,3,2,1))
@@ -154,6 +155,7 @@ mtext(text = "Channel", side = 1, line = 1, at = 1.1)
 ```
 
 **Figure 1.** Correlation plot of 100 channel spectrum of absorbances
+
 
 As it could be observed above, predictors are highly correlated. So, we are going to 
 use ridge regression as we mentioned first. More explicitly, we will do ridge 
@@ -196,6 +198,7 @@ matplot(t(meatspec[c(1:10), c(1:100)]),
         xlab = "channel",
         ylab = "absorbances")
 ```
+<center>
 ```{R First 10, fig.width=6,fig.height=4,echo=FALSE}
 matplot(t(meatspec[c(1:10), c(1:100)]), 
         pch = "*", las = 1,
@@ -204,6 +207,7 @@ matplot(t(meatspec[c(1:10), c(1:100)]),
 ```
 
 **Figure 2.** Plot of first 10 observations
+</center>
 
 ####Group
 To split dataset into 5 groups, a new column "gp" is added with values 0, 1, 2, 3, 4.  
@@ -268,6 +272,7 @@ Xs_v = cumsum(Xs_d2) / sum(Xs_d2)
 min(Xs_v)
 plot(Xs_v, xlab = "Index_PC", ylab = "Variances")
 ```
+<center>
 ```{R svd,echo=FALSE}
 X = new_data[which(new_data$gp != 0),1:100]
 Xs = svd(X)
@@ -280,6 +285,7 @@ mtext(text = "Variances", side = 3, line = 1, at = -13)
 ```
 
 **Figure 3.** Variance explained by Principle Component 
+</center>
 
 #### Why "nPCs" is NULL but not 1? 
 This is because function "which.max" determines the location, i.e., index 
@@ -288,7 +294,7 @@ such a location, thus NULL is returned. "nPCs"was assigned as NULL as well.
 
 
 #### $*$ **Our Solution**
-In case of almost perfect multicollinearity, we propose to calculate singular value 
+Under cases of almost perfect multicollinearity, we propose to calculate singular value 
 decomposition separately and specify our own "nPCs."
 
 Meanwhile, you can choose your own threshold and reflect it by setting "nPCs" value.
@@ -354,7 +360,7 @@ rmse_fct(y = test_data[, 101],
 #### $*$ Fit linear ridge regression with nPCs = 3
 What will happen if we set a higher threshold? Let's consider including first 3 principal 
 components by setting nPCs = 3. Based on previous analysis, first 3 principal components 
-explains more than **99.99%** variances in predictors. 
+explain more than **99.99%** variances in predictors. 
 
 ```
 # fit linear ridge regression with nPC = 3
@@ -446,7 +452,7 @@ rmse_fct(y = test_data[, 101],
 
 ### Conclusion 
 We identified a defect in implementating "linearRidge" function in package "RIDGE" under 
-extreme scenarios, where predictors are almost perfectly multicollinearity. Under such 
+extreme scenarios, where almost perfectly multicollinearity was shown among independent variables. Under such 
 situations, we suggest user to to specify the value of paramter "nPCs" as an input to the function. 
 
 Zooming into the source code, we observed the threshold used for selecting number of principal 
