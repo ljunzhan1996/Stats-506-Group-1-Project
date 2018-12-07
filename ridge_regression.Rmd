@@ -26,10 +26,10 @@ predictors, we could use ridge regression instead.
 
 First, let's take a look at how regression coefficients $\beta$ is computed.
 The computation of ridge coefficients is equivalent to a *argmin* function as below. 
-\[\beta=arg\min \limits_{x\in R}||X\beta-Y||^{2}_{2}+\lambda||\beta||^{2}_{2} \]
+\[\beta=argmin ||X\beta-Y||^{2}_{2}+\lambda||\beta||^{2}_{2} \]
 Then we can find this function could be rewritten as a clearer way as below.
 
-\[\beta=arg\min \limits_{x\in R} || 
+\[\beta=argmin || 
 \left( 
 \begin {matrix} 
  X\\
@@ -51,7 +51,7 @@ Then we can find this function could be rewritten as a clearer way as below.
 
 From the view of singular value decomposition(**SVD**), we can quickly get the 
 answer to the question of $X=argmin||AX-b||^{2}_{2}=A^{+}b$, where $A^{+}$ means 
-the pseudo inverse of A matrix. Consequently, we could obtain ridge 
+the pseudo inverse of $A$ matrix. Consequently, we could obtain ridge 
 coefficients \beta by calculating the pseudo inverse of matrix 
 $\left(\begin {matrix} X\\ \sqrt{\lambda}I\\ \end {matrix}\right)$
 in our problem.
@@ -482,7 +482,7 @@ place more effort on the model analysis part.
 
 ###Ridge Regression using function ridge()
 
-####Standardization
+####Data standardization
 As we know, the ridge regression will perform better if we standardize the data 
 before doing the regression.So the **ridge()** function in Matlab,by default, will 
 always stardarize the data first.And the fouth parameter scaled means whether we choose 
@@ -855,8 +855,7 @@ the results are not exactly the same (as we expected), the estimations of
 $\lambda$ are close and we have achieved good predicitons based on it. 
 
 We used different methods in seleting $\lambda$. Matlab does not provide 
-any built in function thus we wrote our own cross-validation funtion and 
-selected $\lambda$ based on MSE. Package RIDGE was used in R, which 
+any built in function to select $\lambda$ thus we wrote our own cross-validation function and selected $\lambda$ based on MSE. Package RIDGE was used in R, which 
 implemented a method by combining the PCA and ridge regression. The function 
 we used has a built in mechanism to estimate $\lambda$. Stata also provides 
 built in function for ridge regression which selects $\lambda$ based on the 
