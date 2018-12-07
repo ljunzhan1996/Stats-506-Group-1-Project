@@ -19,15 +19,15 @@ library(ridge)
   
 
 #Introduction
-Among ordinary OLS regression, it is easy to cause problems, for example, imprecise 
+By ordinary OLS regression, it is easy to cause problems, for example, imprecise 
 estimate of coefficients, measurement error sensitivity and numerical instability 
-when predictors are highly correlated. To deal with mutiple collinearity of 
-predictors, we could choose to use ridge regression rather.
+, when predictors are highly correlated. To deal with multiple collinearity of 
+predictors, we could use ridge regression instead.
 
 First, let's take a look at how regression coefficients $\beta$ is computed.
 The computation of ridge coefficients is equivalent to a *argmin* function as below. 
 \[\beta=arg\min \limits_{x\in R}||X\beta-Y||^{2}_{2}+\lambda||\beta||^{2}_{2} \]
-Then we can find this function can be rewrite as a clearer way as below.
+Then we can find this function could be rewritten as a clearer way as below.
 
 \[\beta=arg\min \limits_{x\in R} || 
 \left( 
@@ -51,8 +51,10 @@ Then we can find this function can be rewrite as a clearer way as below.
 
 From the view of singular value decomposition(**SVD**), we can quickly get the 
 answer to the question of $X=argmin||AX-b||^{2}_{2}=A^{+}b$, where $A^{+}$ means 
-the pseudo inverse of A matrix. Then we can compute the pseudo inverse of the 
-matrix of our problem and get the answer of ridge coefficients \beta.
+the pseudo inverse of A matrix. Consequently, we could obtain ridge 
+coefficients \beta by calculating the pseudo inverse of matrix 
+$\left(\begin {matrix} X\\ \sqrt{\lambda}I\\ \end {matrix}\right)$
+in our problem.
 
 \[\beta=
 \left( 
@@ -95,23 +97,23 @@ X^{T}&\sqrt{\lambda}I
  \right)
 \]
 
-Finish the computation above and we can get the value of $\beta$ equals
+Finishing these steps above, we can get the value of coefficients $\beta$, which equals
 \[
 \beta=(X^{T}X+{\lambda}I)^{-1}X^{T}Y
 \]
-Now we briefly introduce how to compute the regression coeficients. In the 
-following part, we'll place more efforts in $\lambda$ selection's work, which is 
-equally an important part in ridge regression.
+Thus, we briefly introduced the process of computing ridge regression coeficients. In the 
+following part, we'll place most of our efforts on selection of $\lambda$, which is 
+an equally important part in ridge regression.
 
 
 #Data Description
-The dataset we used in this project was meatspec, from R package: faraway. You could
-see the description of this package in references.
+The dataset we will use in this project is meatspec, from R package: faraway. You could
+see more descriptions of this package in references.
 
-The dataset meatspec includes 215 samples. For each sample, the fat content of fresh
-choped meat was measured along the 100 channel spectrum of absorbances. 
-Since determining the fat content via analytical chemistry is time consuming we would 
-like to build a model to predict the fat content of new samples using 100 obsorbances 
+The dataset meatspec includes 215 samples. For each sample, the fat content(fat) of fresh
+choped meat was measured along the 100 channel spectrum of absorbances(V1-V100). 
+Since determining the fat content via analytical chemistry is time consuming, we would 
+like to build a model to predict the fat content of new samples using 100 absorbances 
 which can be measured more easily.
 
 ```{R dim, include = T}
@@ -128,8 +130,8 @@ knitr::kable(variable_description,format='pandoc',caption=cap,align='l',
 ```
 
 The 215 samples of 100 channel spectrum of absorbances measurement forms a 215 * 100
-matrix, where the condition number is 2.6e+14. High condition number shows the matrix 
-is ill-conditioned.
+matrix, where the condition number is 2.6e+14. This high condition number shows that the 
+variable matrix in our example is ill-conditioned.
 ```{R conditional number}
 ##dimension
 dim(meatspec)
@@ -140,7 +142,7 @@ max(e)/min(e)
 ```
 
 Below is a plot of correlation among 100 channel spectrum of absorbances. We observe 
-very high collinearity, where adjacent channels are almost perfectly correlated. 
+a very high collinearity, where adjacent channels are almost perfectly correlated. 
 
 ```{R correlation}
 ##correlation plot
@@ -153,11 +155,11 @@ mtext(text = "Channel", side = 1, line = 1, at = 1.1)
 
 **Figure 1.** Correlation plot of 100 channel spectrum of absorbances
 
-Then we are going to do linear regression of response fat on V1-V100 predictors 
-to fit a model for predicting the fat content in chopped pure meat. As it could be
-observed above, predictors are highly correlated, so we use ridge regression as we
-mentioned at first. We will fit the ridge regression model in R, Matlab and Stata
-respectively. See the introductions of specific packages or functions below.
+As it could be observed above, predictors are highly correlated. So, we are going to 
+use ridge regression as we mentioned first. More explicitly, we will do ridge 
+regression of response fat on V1-V100 predictors to fit a model and predict the fat 
+content in each chopped pure meat. We will show the examples of ridge regression in R, 
+Matlab and Stata respectively. See introductions of specific ridge packages or functions below.
 
 # {.tabset}
 ## R
@@ -175,7 +177,7 @@ While exploring the RIDGE package, we have found an implementation defect in fun
 In this section, we will identify the problem and propose a solution to get rid of it. 
 
 ### Load, Mung and Visualize Data
-The dataset we use was "meatspec", from faraway package. 
+The dataset we use is "meatspec", from faraway package. 
 ```
 library("faraway")
 data(meatspec)
@@ -185,27 +187,26 @@ data(meatspec)
 data(meatspec)
 ```
 
-Below is a matplot of absorbances(y) agains 100 channel spectrums 
+Below is a matplot of absorbances(y) against 100 channel spectrums 
 ($X_1$, $X_2$, ..., $X_{100}$) for first 10 observations in the dataset. 
 ```
+# plot first 10 observations
 matplot(t(meatspec[c(1:10), c(1:100)]), 
         pch = "*", las = 1,
         xlab = "channel",
         ylab = "absorbances")
 ```
 ```{R First 10, fig.width=6,fig.height=4,echo=FALSE}
-# plot first 10 observations
 matplot(t(meatspec[c(1:10), c(1:100)]), 
         pch = "*", las = 1,
         xlab = "channel",
         ylab = "absorbances")
-        
 ```
 
 **Figure 2.** Plot of first 10 observations
 
 ####Group
-To split dataset into 5 groups, a new column "gp" was added with values 0, 1, 2, 3, 4.  
+To split dataset into 5 groups, a new column "gp" is added with values 0, 1, 2, 3, 4.  
 We take gp = 1 - 4 as training data, and gp = 0 as validation data. 
 ```
 new_data = meatspec %>% dplyr::mutate(gp = seq(1:n())%% 5)
@@ -220,7 +221,7 @@ new_data = meatspec %>% dplyr::mutate(gp = seq(1:n())%% 5)
 #### $*$ Function Description: linearRidge
 The R package "Ridge" contains a function "linearRidge", which fits a linear ridge 
 regression model providing an option to chose the ridge regression parameter 
-automatically using the method proposed by Cule et at(2012).
+automatically using the method proposed by Cule in 2012.
 ```
 library("ridge")
 ```
@@ -228,14 +229,19 @@ library("ridge")
 #### $*$ Error?!
 With our training dataset, calling function linearRidge returns an error as below. 
 
-![](Ridge_Error.PNG){width=77%}
-```{R error, include = FALSE, eval = FALSE,echo=FALSE}
+```
 # fit ridge regression using linearRidge
+```
+
+![](Ridge_Error.PNG){width=77%}
+
+```{R error, include = FALSE, eval = FALSE,echo=FALSE}
 ridge.fit.error = linearRidge(formula = fat ~ ., 
                               data = new_data[which(new_data$gp != 0), 1:101],
                               lambda = "automatic",
                               nPCs = NULL)
 ```
+
 #### $*$ Source of error
 Tracing back to the source code, the behavior starts deviating from our expection 
 since line 96, where object "nPCs" turned NULL. 
@@ -245,17 +251,16 @@ returned NULL and assigned it to "nPCs".
 
 ![](Ridge_Error_Fct.PNG){width=67%}
 
-
-
 #### Why NULL?
 "nPCs" stands for number of principal component. In source code, "nPCs" is defined 
 as the minimum number of principal components that explains more than **90%** of 
 variances in the predictors.
 
 Using our training data, we have one principle component explains **99.96%** of 
-total variances in the predictors due to collinearity. Since it exceeded the 90% 
+total variances in the predictors due to collinearity. Since it exceeds the 90% 
 threshold, **we expect setting "nPCS" as 1 here.** 
 ```
+# check PC
 X = new_data[which(new_data$gp != 0),1:100]
 Xs = svd(X)
 Xs_d2 = Xs$d^2
@@ -264,7 +269,6 @@ min(Xs_v)
 plot(Xs_v, xlab = "Index_PC", ylab = "Variances")
 ```
 ```{R svd,echo=FALSE}
-# check PC
 X = new_data[which(new_data$gp != 0),1:100]
 Xs = svd(X)
 Xs_d2 = Xs$d^2
@@ -284,20 +288,20 @@ such a location, thus NULL is returned. "nPCs"was assigned as NULL as well.
 
 
 #### $*$ **Our Solution**
-In case of almost perfect multicollinearity, we propose to calculate Singular value 
-decomposition separately and specify your own "nPCs."
+In case of almost perfect multicollinearity, we propose to calculate singular value 
+decomposition separately and specify our own "nPCs."
 
 Meanwhile, you can choose your own threshold and reflect it by setting "nPCs" value.
 
-Instead of relying on the 90% threshold set within the function, more flexibility is 
+Instead of relying on the 90% threshold set within this function, more flexibility is 
 granted for users in this way. 
 
 #### $*$ Fit linear ridge regression with nPCs = 1
-
-Based on training data, we fit linear lasso regression using function "linearRidge", 
+Based on training data, we fit linear ridge regression using function "linearRidge", 
 which returns an object containing a named vector of fitted coefficients, the ridge 
 regression parameters($\lambda$), etc..
 ```
+# fit linear ridge regression with nPC = 1
 train_data = new_data[which(new_data$gp != 0),1:101]
 ridge.fit1 = linearRidge(formula = fat ~ ., 
                          data = train_data,
@@ -306,7 +310,6 @@ ridge.fit1.summary = summary(ridge.fit1)
 ridge.fit1.summary$lambda
 ```
 ```{R ridge.fit,echo=FALSE}
-# fit linear ridge regression with nPC = 1
 train_data = new_data[which(new_data$gp != 0),1:101]
 ridge.fit1 = linearRidge(formula = fat ~ ., 
                         data = train_data,
@@ -318,24 +321,10 @@ ridge.fit1.summary$lambda
 
 ```
 
-
 ##### Prediction 
 For validation, we use the function "predict" with object returned by "linearRidge" and 
-our validation data. The RMSE calculated based on prediction was about 10.
+our validation data. The RMSE calculated  was about 10 based on predictions.
 ```
-test_data = new_data[which(new_data$gp == 0),1:101]
-ridge.predict1 = predict(object = ridge.fit1, newdata = test_data[, 1:100])
-
-rmse_fct = function(y, yhat){
-  sqrt(mean( (y - yhat)^2))
-}
-
-
-rmse_fct(y = test_data[, 101],
-         yhat = ridge.predict1)
-```
-
-```{R prediction, include = TRUE,echo=FALSE}
 # prediction using test data based on ridge.fit1
 test_data = new_data[which(new_data$gp == 0),1:101]
 ridge.predict1 = predict(object = ridge.fit1, newdata = test_data[, 1:100])
@@ -350,12 +339,25 @@ rmse_fct(y = test_data[, 101],
          yhat = ridge.predict1)
 ```
 
+```{R prediction, include = TRUE,echo=FALSE}
+test_data = new_data[which(new_data$gp == 0),1:101]
+ridge.predict1 = predict(object = ridge.fit1, newdata = test_data[, 1:100])
+
+rmse_fct = function(y, yhat){
+  sqrt(mean( (y - yhat)^2))
+}
+
+rmse_fct(y = test_data[, 101],
+         yhat = ridge.predict1)
+```
+
 #### $*$ Fit linear ridge regression with nPCs = 3
 What will happen if we set a higher threshold? Let's consider including first 3 principal 
 components by setting nPCs = 3. Based on previous analysis, first 3 principal components 
-explains more than **99.99%** variances in the predictors. 
+explains more than **99.99%** variances in predictors. 
 
 ```
+# fit linear ridge regression with nPC = 3
 train_data = new_data[which(new_data$gp != 0),1:101]
 ridge.fit3 = linearRidge(formula = fat ~ ., 
                          data = train_data,
@@ -365,7 +367,6 @@ ridge.fit3.summary = summary(ridge.fit)
 ridge.fit3.summary$lambda
 ```
 ```{R ridge.fit 3,echo=FALSE}
-# fit linear ridge regression with nPC = 3
 train_data = new_data[which(new_data$gp != 0),1:101]
 ridge.fit3 = linearRidge(formula = fat ~ ., 
                          data = train_data,
@@ -375,20 +376,11 @@ ridge.fit3.summary = summary(ridge.fit3)
 ridge.fit3.summary$lambda
 ```
 
-
 ##### Prediction 
 For validation, we use the function "predict" with object returned by "linearRidge" and 
 our validation data. The RMSE calculated based on prediction was about 4.3, which is much 
 smaller than setting nPCs = 1. **Better prediction!**
 ```
-test_data = new_data[which(new_data$gp == 0),1:101]
-ridge.predict3 = predict(object = ridge.fit3, newdata = test_data[, 1:100])
-
-rmse_fct(y = test_data[, 101],
-         yhat = ridge.predict3)
-```
-
-```{R prediction 3, include = TRUE,echo=FALSE}
 # prediction using test data based on ridge.fit1
 test_data = new_data[which(new_data$gp == 0),1:101]
 ridge.predict3 = predict(object = ridge.fit3, newdata = test_data[, 1:100])
@@ -398,11 +390,20 @@ rmse_fct(y = test_data[, 101],
          yhat = ridge.predict3)
 ```
 
+```{R prediction 3, include = TRUE,echo=FALSE}
+test_data = new_data[which(new_data$gp == 0),1:101]
+ridge.predict3 = predict(object = ridge.fit3, newdata = test_data[, 1:100])
+
+rmse_fct(y = test_data[, 101],
+         yhat = ridge.predict3)
+```
+
 #### $*$ nPCs: the larger the better?
 What will happen if we set an even higher threshold? Do we really need a threshold?
 Let's consider including first 80 principal components by setting nPCs = 80.
 
 ```
+# fit linear ridge regression with nPC = 80
 train_data = new_data[which(new_data$gp != 0),1:101]
 ridge.fit80 = linearRidge(formula = fat ~ ., 
                          data = train_data,
@@ -411,7 +412,6 @@ ridge.fit80.summary = summary(ridge.fit80)
 ridge.fit80.summary$lambda
 ```
 ```{R ridge.fit 80,echo=FALSE}
-# fit linear ridge regression with nPC = 80
 train_data = new_data[which(new_data$gp != 0),1:101]
 ridge.fit80 = linearRidge(formula = fat ~ ., 
                          data = train_data,
@@ -427,14 +427,6 @@ For validation, we use the function "predict" with object returned by "linearRid
 our validation data. The RMSE calculated based on prediction was about 4.7, which is 
 larger than setting nPCs = 3. **Thus including more principle components does not guaranteee better prediction. **  
 ```
-test_data = new_data[which(new_data$gp == 0),1:101]
-ridge.predict80 = predict(object = ridge.fit80, newdata = test_data[, 1:100])
-
-rmse_fct(y = test_data[, 101],
-         yhat = ridge.predict80)
-```
-
-```{R prediction 80, include = TRUE,echo=FALSE}
 # prediction using test data based on ridge.fit80
 test_data = new_data[which(new_data$gp == 0),1:101]
 ridge.predict80 = predict(object = ridge.fit80, newdata = test_data[, 1:100])
@@ -443,6 +435,15 @@ ridge.predict80 = predict(object = ridge.fit80, newdata = test_data[, 1:100])
 rmse_fct(y = test_data[, 101],
          yhat = ridge.predict80)
 ```
+
+```{R prediction 80, include = TRUE,echo=FALSE}
+test_data = new_data[which(new_data$gp == 0),1:101]
+ridge.predict80 = predict(object = ridge.fit80, newdata = test_data[, 1:100])
+
+rmse_fct(y = test_data[, 101],
+         yhat = ridge.predict80)
+```
+
 ### Conclusion 
 We identified a defect in implementating "linearRidge" function in package "RIDGE" under 
 extreme scenarios, where predictors are almost perfectly multicollinearity. Under such 
@@ -466,19 +467,16 @@ fat = M(:,101);
 spec = M(:,1:100);
 ```
 
-
-Since the data are clean, we don't need to do much work about the data cleaning. Let's 
+Since the data is clean, we don't need to do much work about the data cleaning. Let's 
 place more effort on the model analysis part. 
 
-
-###Ridge Regression
+###Ridge Regression using function ridge()
 
 ####Standardization
 As we know, the ridge regression will perform better if we standardize the data 
 before doing the regression.So the **ridge()** function in Matlab,by default, will 
 always stardarize the data first.And the fouth parameter scaled means whether we choose 
-to transform the coefficient $\beta$ in to 
-the scale of the original data.
+to transform the coefficient $\beta$ into the scale of the original data.
 
 ####$\beta$<sub>*Ridge*
 In Matlab, we can quickly get the coefficient of ridge regression with the help of 
@@ -492,7 +490,7 @@ b = ridge(fat,spec,lamda,1)
 
 The Ridge trace shows a set of ridge solutions. And it can show us more directly how 
 the coefficient $\beta$ change with $\lambda$. With each ridge parameter, we can find 
-the related coefficient. Since in the meatspec data we use has 100 predictors, which 
+the related coefficients. Since in the meatspec data we use has 100 predictors, which 
 means there are 100 ridge traces, making the plots looks a little messy. 
 ```{r Ridgetrace, echo=TRUE, eval=FALSE}
 figure
@@ -518,14 +516,7 @@ In the original paper of *Hoerl* and *Kennard* , they thought we could choose $\
 for which coefficients are not rapidly changing and have "sensible" signs. Since it's 
 not a disciplined way, the standard practice now is use cross-validation.
 
-####Cross-Validation
-In Matlab, we can finish the cross-validation work of $\lambda$ selection with the help 
-of **crossval()** function. In **R** and **Stata**, we can directly select the $\lambda$ 
-with which could reach the minimum the generalized cross-validation value (*GCV*) on the 
-validation set. While in Matlab, we can not directly get the GCV value, so we set the 
-$\lambda$ choosing criterion of MSE on validation set, which is also very interpretable 
-and commonly used.
-
+#####Group
 First, we split our dataset into test set and validation set. We choose the test set as 
 the row numbers which mod 5=0, and the left as the validation set. 
 ```{r split dataset, echo=TRUE, eval=FALSE}
@@ -536,6 +527,15 @@ Mvalidation= M(index1,:);fatt=Mtest(1:100);spect=Mtest(:,1:100) %split the valid
 ```
 
 Then we finish the cross-validation on our validation set.
+
+#####Cross-Validation
+In Matlab, we can finish the cross-validation work of $\lambda$ selection with the help 
+of **crossval()** function. In **R** and **Stata**, we can directly select the $\lambda$ 
+with which could reach the minimum the generalized cross-validation value (*GCV*) on the 
+validation set. While in Matlab, we can not directly get the GCV value, so we set the 
+$\lambda$ choosing criterion of MSE on validation set, which is also very interpretable 
+and commonly used.
+
 ```{r Crossvalidation, echo=TRUE, eval=FALSE}
 i=1
 cp=cvpartition(fat,'k',10); %set dataset partition && set k-fold numbers =10
@@ -563,16 +563,16 @@ partition of the k-fold cross-validation, the result may vary, but only changes 
 small scale.
 
 ####Results Comparison and Reflection
-One of the most important work in Ridge regression is to select $\lambda$. But when we 
+One of the most important work in ridge regression is to select $\lambda$. But when we 
 compare the results we get from **Matlab, R , Stata**, it's somewhat upsetteing to find 
 the results differs at first $\lambda_{Matlab}$ =1.18e-5, $\lambda_{R}$ =1.81e-9, 
-$\lambda_{Stata}$=5e-10. But explore the reason for such difference, we find it arises 
+$\lambda_{Stata}$=5e-10. But exploring the reason for such difference, we find it arises 
 from some interesting reasons. 
 
 #####(i)Different cross-validation partitions lead to difference
 We can observe obvious fluctuation between the $\lambda$ and MSE value, if we do not 
-set cross-validation's partitions before we loop for different $\lambda$ value. The general 
-trend of plot doesn't change but with the fulctuation in $\lambda$. We can see that 
+set cross-validation's partitions before we loop for different $\lambda$ values. The general 
+trend of plot doesn't change but with some fluctuation with $\lambda$. We can see that 
 different partitions in cross-validation would lead to different results.  
 
 <center>
@@ -582,7 +582,7 @@ different partitions in cross-validation would lead to different results.
 </center>
 
 #####(ii)Try another lamda-selection's range
-If we retrict the range for lamda selection in loop [0,1e-10,3e-8] instead of the loop 
+If we retrict the range for $\lambda$ selection in loop [0,1e-10,3e-8] instead of the loop 
 I used above [0:1e-7:10e-5], we can select $\lambda$=7.3e-9 with MSE=7.1551, which is 
 quite near the results we get from R and Stata. 
 
@@ -593,17 +593,18 @@ quite near the results we get from R and Stata.
 </center>
 
 Since the $\lambda$ selected with our datasets is relatively small, on the scale of 
-0~2e-5,, so the relatively small value of $\lambda$ could be the reason of fluctuation. 
+0~2e-5, so the relatively small value of $\lambda$ could be the reason of fluctuation. 
 And since the *MSE* calculated on the validation set remain stable, $\lambda$'s 
-fluctuation could not cause much problem.
+fluctuation could not cause many problems.
 
 #####(iii)Softwares' relatively different ways to compute
-Another reason for difference in selecting $\lambda$ is Matlab, R, Stata use somewhat 
-different ways for such selection. In **Matlab**, there is no function can directly get 
+Another reason for difference in selecting $\lambda$ is that Matlab, R and Stata use somewhat 
+different ways for such selection. In **Matlab**, there is no function which can directly get 
 the $\lambda$, so I combine the loop for $\lambda$ and cross-validation function to get 
-the $\lambda$ with least MSE in validtaion set. In **R**, Ridge package combine the PCA 
-with ridge regression and runs a default way for cross-validation and then get $\lambda$. 
-In **Stata**, the $\lambda$ is selected by the criterion of GCV(*generalized crossvalidation value*) instead of MSE.
+the $\lambda$ with least MSE in validtaion set. In **R**, Ridge package combines the PCA 
+with ridge regression and runs a default way for cross-validation, and then get $\lambda$. 
+In **Stata**, the $\lambda$ is selected by the criterion of GCV(*generalized crossvalidation value*) 
+instead of MSE.
 
 ###Model test
 
@@ -617,11 +618,13 @@ beta=ridge(fatt,spect,1.18e-5,0) % ridge coefficients
 mean((fat-[ones(length(spec),1),spec]*beta).^2) % MSE one the test data
 ```
 
-Run the code above, we can get the MSE=7.78, which change not much from the validation 
+Run the code above, we could get the MSE=7.78, which changes not much from the validation 
 test (MSE=5.1894). This shows our model still behave well in the test part.
 
 ##Stata
 ###Load, Mung and Summarize Data
+The data in this example is from meatspec dataset in R package: faraway.
+
 First, we load data into Stata and we could see the dimension of this dataset
 when we import it.
 ```{r eval=FALSE}
@@ -645,7 +648,9 @@ The data seems to be very clean, we just pass to next step.
 ###Ridge Regression using Package: ridgereg
 ####Function Description
 Because package:ridgereg is not included in Stata, we need to install it first.
-We will use several options of this function ridgereg: 
+We will use several options of this function ridgereg in the following, so we 
+discuss these options first: 
+
 model(orr): ordinary ridge regression.
 
 kr(): ridge $\lambda$ value, it is must be in the range (0 < k < 1).
@@ -664,8 +669,8 @@ ssc install ridgereg
 ```
 
 ####Standardization
-As recommanded by the method of ridge regression, we need to standarized our 
-predictors and centered the response first. Using for loop to achieve this 
+As recommanded by the method of ridge regression, we need to standarize our 
+predictors and center the response first. Using for loop to achieve this 
 object:
 ```{r eval=FALSE}
 *standardize independent variables and centered dependent variable
@@ -678,11 +683,11 @@ foreach i of numlist 1/100 {
 }
 ```
 
-####$\beta$ridge
-As we know from introsuction, the coefficients of ridge regression shrink 
+####$\beta$<sub>*Ridge*
+As we know from introduction, the coefficients of ridge regression shrink 
 to 0 with the increasing of $\lambda$ value. If we visualize this process in Stata,
 we first do ridge regression on each $\lambda$ and then plot coefficients against
-$\lambda$ value. We could get a plot as below:
+$\lambda$ values. The plot is as below:
 ```{r eval=FALSE}
 *graph of coefficients: converge to 0
 preserve
@@ -727,7 +732,7 @@ generate n=_n
 ```
 
 In this case, we split our dataset into 5 groups. One of the group is test data, 
-whose case number could be divided by 5 and without reminder. Others are 
+whose case number could be divided by 5 without reminder. Others are 
 training and validation data.
 
 #####Cross-Validation
@@ -779,7 +784,7 @@ So, we could conclude that $\lambda=5e-10$ for this case.
 
 #####Test model
 When come to the last step of model assessment, we try to test the performance 
-of our exisiting model on the test data we keep at first.
+of our exisiting model on the test data kept at first.
 So, we fit the same model on the same dataset by assigning $\lambda$ and then 
 use matrix manipulation to get predictions.
 Don't forget that fat variable is centered at first. We need to add back mean 
@@ -794,7 +799,7 @@ matrix pred_fat=predictors*coeff
 svmat pred_fat,names(pred_fat)
 ```
 
-Finally, MSE of predictions could be computed .Review the formula in introduction 
+Finally, MSE of predictions could be computed. Review the formula in introduction 
 to see how it works. Here is the way we could computed in Stata.
 ```{r eval=FALSE}
 *compute MSE
@@ -805,7 +810,7 @@ display r(mean)
 ![](performance.PNG){width=67%}
 
 We could see that the MSE of one point even reaches 727. Actually it is an 
-abnormal value. If we exclude this observation, the MSE is much better.
+abnormal value. If we exclude this observation from test set, the MSE is much better.
 
 ```{r eval=FALSE}
 *exclude 727 abnormal observation
@@ -815,7 +820,7 @@ display r(mean)
 ![](exclude.PNG){width=67%}
 
 If we use this result to predict, RMSE(Root Mean Sqaured Error), which is the 
-root of MSE, is to be used. RMSE equals 2.377 and it is relatively good.
+root of MSE, is to be used. RMSE equals 2.377 and it is relatively a good result.
 
 ###Conclusion
 As we could see from above, GCV values against $\lambda$ is not continuous. This
@@ -828,8 +833,8 @@ to last ones. As a result, the graph of GCV values is not strictly continuous.
 In addition, $\lambda$ is very small after standardization. 
 
 Compared with Matlab and R, Stata removes the abnormal point when testing the final
-model. It is a kind of method to improve the testing results .This is caused by the 
-differences between programming approaches. Other two samples show a good result even 
+model. It is a kind of method to improve the performance of our model. This is caused by the 
+differences between our approaches. Other two samples show a good result even 
 without this step.
 
 #Reflection
@@ -839,15 +844,15 @@ regression packages in various statistical or mathematical softwares. Though
 the results are not exactly the same (as we expected), the estimations of 
 $\lambda$ are close and we have achieved good predicitons based on it. 
 
-We used different method in seleting $\lambda$. **Matlab** does not provide 
+We used different methods in seleting $\lambda$. Matlab does not provide 
 any built in function thus we wrote our own cross-validation funtion and 
-selected $\lambda$ based on MSE. Package RIDGE was used in **R**, which 
+selected $\lambda$ based on MSE. Package RIDGE was used in R, which 
 implemented a method by combining the PCA and ridge regression. The function 
-we used has a built in mechanism to estimate $\lambda$. **Stata** also provides 
+we used has a built in mechanism to estimate $\lambda$. Stata also provides 
 built in function for ridge regression which selects $\lambda$ based on the 
 criterion of GCV(*generalized crossvalidation value*). In addition, the estimated 
-value of $\lambda$ is very small. We believe different precision level set 
-within each software is one of the reason for difference in our estimation.
+value of $\lambda$ is very small. We believe different precision levels set 
+within each software is one of the reason for differences in our estimation.
 
 One learning point from using RIDGE package in R is never trust any package 
 blindly. Rather than use it as a blackbox, it's worthwhile to spend a bit more 
